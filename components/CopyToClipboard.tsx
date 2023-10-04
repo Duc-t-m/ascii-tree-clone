@@ -10,7 +10,8 @@ export function CopyToClipboard() {
         navigator.clipboard.writeText(toClipBoard);
         (tooltipRef.current! as HTMLDivElement).innerText = "Copied";
         setTimeout(() => {
-            (tooltipRef.current! as HTMLDivElement).innerText = "Copy to clipboard";
+            if (tooltipRef.current)
+                (tooltipRef.current as HTMLDivElement).innerText = "Copy to clipboard";
         }, 3000);
     }
 

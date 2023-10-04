@@ -6,6 +6,8 @@ type Node = {
     level: number;
     handleDelete?: (deleteIndex: number) => () => void;
     children: Node[];
+    end: boolean;
+    prevEnds: boolean[]
 }
 
 export function TreeNode({ root }: { root?: Node }) {
@@ -15,20 +17,29 @@ export function TreeNode({ root }: { root?: Node }) {
             id: 0,
             name: "root",
             level: 0,
-            children: []
+            children: [],
+            end: true,
+            prevEnds: []
         }
     );
 
     const handleAddChild = () => {
+        let newChild = node.children;
+        if (newChild.length > 0)
+            newChild[newChild.length - 1].end = false;
+        newChild = [...newChild, {
+            id: newChild.length,
+            name: "newChildNode",
+            level: node.level + 1,
+            children: [],
+            handleDelete: deleteChild,
+            end: true,
+            prevEnds: [...node.prevEnds, node.end]
+        }]
+
         setNode({
             ...node,
-            children: [...node.children, {
-                id: node.children.length,
-                name: "newChildNode",
-                level: node.level + 1,
-                children: [],
-                handleDelete: deleteChild
-            }]
+            children: newChild
         });
     }
 
@@ -56,14 +67,26 @@ export function TreeNode({ root }: { root?: Node }) {
     }
 
     const [showButton, setShowButton] = useState(false);
-    let tab: string = "\xa0".repeat(node.level * 4);
+    const createTab = () => {
+        if (node.level == 0)
+            return "";
+        let tab = "\xa0";
+        for (let end of node.prevEnds) {
+            tab += end ?
+                "\xa0".repeat(3) :
+                "│".concat("\xa0".repeat(2));
+        }
+        tab += node.end ? '└──' : '├──';
+        return tab;
+    }
+    let tab = createTab();
 
     return (
         <>
-            <div className="mb-4 w-full"
+            <div className="w-full"
                 onMouseEnter={() => setShowButton(true)}
                 onMouseLeave={() => setShowButton(false)}>
-                <span className="text-white font-bold font-mono mr-4 node">
+                <span className="text-white font-bold font-mono text-3xl mr-4 node">
                     {tab}{editing
                         ? <input type="text" className="bg-slate-400"
                             value={newName}
