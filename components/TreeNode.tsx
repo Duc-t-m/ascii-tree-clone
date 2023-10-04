@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useRef, useState } from "react";
+import { useState } from "react";
 
-interface Node {
+type Node = {
     id: number;
     name: string;
     level: number;
@@ -51,6 +50,11 @@ export function TreeNode({ root }: { root?: Node }) {
         setEditing(!editing);
     }
 
+    function handleEnter(e: React.KeyboardEvent<HTMLInputElement>) {
+        if (e.key == "Enter")
+            editThis();
+    }
+
     const [showButton, setShowButton] = useState(false);
     let tab: string = "\xa0".repeat(node.level * 4);
 
@@ -64,6 +68,8 @@ export function TreeNode({ root }: { root?: Node }) {
                         ? <input type="text" className="bg-slate-400"
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
+                            onKeyDown={handleEnter}
+                            autoFocus
                         ></input>
                         : node.name}
                 </span>
