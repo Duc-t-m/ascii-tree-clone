@@ -11,7 +11,7 @@ export const meta: V2_MetaFunction = () => {
 
 export default function Index() {
   return (
-    <div className="h-screen w-screen bg-slate-600 p-10">
+    <div className="h-fit min-h-screen w-fit min-w-full bg-slate-600 p-10">
       <CopyToClipboard />
       <TreeNode />
     </div>

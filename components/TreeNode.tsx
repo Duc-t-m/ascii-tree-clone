@@ -6,48 +6,38 @@ type Node = {
     level: number;
     handleDelete?: (deleteIndex: number) => () => void;
     children: Node[];
-    end: boolean;
-    prevEnds: boolean[]
 }
 
-export function TreeNode({ root }: { root?: Node }) {
+export function TreeNode({ root, end = true, prevEnds = [] }: { root?: Node, end?: boolean, prevEnds?: boolean[] }) {
     const [node, setNode] = useState<Node>(
         root ||
         {
             id: 0,
             name: "root",
             level: 0,
-            children: [],
-            end: true,
-            prevEnds: []
+            children: []
         }
     );
 
     const handleAddChild = () => {
-        let newChild = node.children;
-        if (newChild.length > 0)
-            newChild[newChild.length - 1].end = false;
-        newChild = [...newChild, {
-            id: newChild.length,
-            name: "newChildNode",
-            level: node.level + 1,
-            children: [],
-            handleDelete: deleteChild,
-            end: true,
-            prevEnds: [...node.prevEnds, node.end]
-        }]
-
         setNode({
             ...node,
-            children: newChild
+            children: [...node.children, {
+                id: node.children.length,
+                name: "newChildNode",
+                level: node.level + 1,
+                children: [],
+                handleDelete: deleteChild
+            }]
         });
     }
 
     const deleteChild = (deleteIndex: number) => () => {
         setNode(node => {
+            let newChild = node.children.filter(child => child.id != deleteIndex);
             return {
                 ...node,
-                children: node.children.filter(child => child.id != deleteIndex)
+                children: newChild
             }
         });
     };
@@ -67,16 +57,17 @@ export function TreeNode({ root }: { root?: Node }) {
     }
 
     const [showButton, setShowButton] = useState(false);
+
     const createTab = () => {
         if (node.level == 0)
             return "";
-        let tab = "\xa0";
-        for (let end of node.prevEnds) {
-            tab += end ?
+        let tab = "\xa0".repeat(2);
+        for (let i = 1; i < prevEnds.length; i++) {
+            tab += prevEnds[i] ?
                 "\xa0".repeat(3) :
                 "│".concat("\xa0".repeat(2));
         }
-        tab += node.end ? '└──' : '├──';
+        tab += end ? '└──' : '├──';
         return tab;
     }
     let tab = createTab();
@@ -138,8 +129,11 @@ export function TreeNode({ root }: { root?: Node }) {
                     </span>
                 }
             </div>
-            {node.children?.map((child) => (
-                <TreeNode root={child} key={child.id} />
+            {node.children?.map((child, index) => (
+                <TreeNode root={child}
+                    key={child.id}
+                    end={index == node.children.length - 1}
+                    prevEnds={[...prevEnds, end]} />
             ))}
         </>
     );
